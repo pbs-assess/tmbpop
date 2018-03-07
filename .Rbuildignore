@@ -1,2 +1,4 @@
 ^tmbpop\.Rproj$
 ^\.Rproj\.user$
+^Session.vim$
+^\.travis\.yml$
