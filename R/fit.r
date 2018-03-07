@@ -9,6 +9,7 @@
 #'   * theta: vector of estimated fixed parameters
 #'   * se.theta: vector of standard errors of fixed parameters
 #' @export
+#' @useDynLib tmbpop
 
 fit <- function(obj,
   trace = TRUE,
@@ -22,7 +23,7 @@ fit <- function(obj,
     data = obj$datalist,
     parameters = obj$parlist,
     random = 'logRt',
-    DLL = "POP",
+    DLL = "tmbpop",
     silent = !trace
   )
 
