@@ -2,26 +2,101 @@
 % Please edit documentation in R/fit.r
 \name{fit}
 \alias{fit}
-\title{Fits POP model to data supplied as POPobj}
+\title{Fit the model to data}
 \usage{
-fit(obj, trace = TRUE, optim.control = list(eval.max = 5000, iter.max =
-  5000))
+fit(obj, trace = TRUE, control = list(eval.max = 5000, iter.max = 5000))
 }
 \arguments{
-\item{obj}{A list of class \code{obj} coming from either \code{build()}
-(user-supplied data) or \code{sim()} (simulated data).}
+\item{obj}{A list of class \code{obj} coming from either \code{\link[=build]{build()}}
+(user-supplied real data) or \code{\link[=sim]{sim()}} (simulated data).}
 
-\item{trace}{TODO}
+\item{trace}{If \code{TRUE}, extra information will be printed.}
 
-\item{optim.control}{TODO}
+\item{control}{A list to pass to the \code{control} argument of
+\code{\link[stats:nlminb]{stats::nlminb()}}.}
 }
 \value{
-A list with the following objects:
+A list with the following elements:
 \itemize{
-\item theta: vector of estimated fixed parameters
-\item se.theta: vector of standard errors of fixed parameters
+\item \code{theta}: vector of estimated fixed parameters
+\item \code{se.theta}: vector of standard errors of fixed parameters
+\item many other elements to be described later TODO
 }
 }
 \description{
-Fits POP model to data supplied as POPobj
+Fit the model to data
+}
+\examples{
+sim_dat <- sim(
+  survey1 = pop_example$S1t,
+  survey2 = pop_example$S2t,
+  survey3 = pop_example$S3t,
+  paa.catch.female = pop_example$patC1,
+  paa.catch.male = pop_example$patC2,
+  n.trips.paa.catch = pop_example$ntC,
+  paa.survey1.female = pop_example$patS11,
+  paa.survey1.male = pop_example$patS12,
+  n.trips.paa.survey1 = pop_example$ntS1,
+  catch = pop_example$Ct,
+  paa.mature = pop_example$ma,
+  weight.female = pop_example$wa1,
+  weight.male = pop_example$wa2,
+  misc.fixed.param = pop_example$MiscFixedParam,
+  theta.ini = NULL, # if NULL, uses default values
+  lkhd.paa = "binomial",
+  var.paa.add = TRUE,
+  enable.priors = TRUE
+)
+model <- fit(sim_dat)
+
+# Sample via NUTS MCMC with Stan
+\donttest{
+library("tmbstan")
+# options(mc.cores = parallel::detectCores()) # for parallel processing
+pop_mcmc <- tmbstan(
+  model$obj,
+  chains = 1, # using only 1 chain and...
+  iter = 600, # only 600 iterations for a quick example
+  init = list("last.par.best"),
+  control = list(adapt_delta = 0.9, max_treedepth = 20L) # as needed, see ?stan
+)
+
+pars <- c("logR0", "logM1", "logh", "logmuC", "deltaC", "logqS1") # a selection
+bayesplot::mcmc_trace(as.array(pop_mcmc), pars = pars)
+bayesplot::mcmc_hist(as.array(pop_mcmc), pars = pars)
+bayesplot::mcmc_pairs(as.array(pop_mcmc), pars = pars)
+}
+
+# Table of estimated fixed parameters, their standard errors and the true theta
+table.theta <- cbind(sim_dat$true.theta, model$theta, model$se.theta)
+dimnames(table.theta)[[2]] <- c("True", "Estimate", "s.e.")
+round(table.theta, 3)
+
+# Plot predicted recruits with +- 2s.e. as envelope, with true recuits overlaid
+lb.R <- model$R - 2 * model$se.R
+ub.R <- model$R + 2 * model$se.R
+
+plot(sim_dat$years, model$R,
+  type = "o", xlab = "years", ylab = "Recruits", pch = 19, cex = 0.5,
+  ylim = c(2000, 7000), main = paste0("Predicted recruits, simulated data")
+)
+polygon(
+  x = c(sim_dat$years, sim_dat$years[seq(sim_dat$TC, 1)]),
+  y = c(lb.R, ub.R[seq(sim_dat$TC, 1)]), col = "#4f4f4f40", border = NA
+)
+lines(sim_dat$years, sim_dat$true.R, col = "red")
+
+# Plot predicted biomass with +- 2s.e. as envelope, with true biomass overlaid
+lb.B <- model$B - 2 * model$se.B
+ub.B <- model$B + 2 * model$se.B
+
+plot(sim_dat$years, model$B,
+  type = "o", xlab = "years", ylab = "SSB", pch = 19, cex = 0.5,
+  ylim = c(2000, 22000), main = paste0("Predicted biomass, simulated data")
+)
+polygon(
+  x = c(sim_dat$years, sim_dat$years[seq(sim_dat$TC, 1)]),
+  y = c(lb.B, ub.B[seq(sim_dat$TC, 1)]), col = "#4f4f4f40", border = NA
+)
+lines(sim_dat$years, sim_dat$true.B, col = "red")
 }

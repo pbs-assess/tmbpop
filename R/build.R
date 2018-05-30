@@ -1,36 +1,10 @@
-#' Formats data files for POPfit.
+#' Format data for model fitting
 #'
-#' @param catch Data frame (or matrix) of commercial trawl data, dimensions
-#' are TC rows by 2 columns. The first column is the year, while the second
-#' column is the observed catch.
-#' @param survey1 TODO
-#' @param survey2 TODO
-#' @param survey3 TODO
-#' @param paa.catch.female TODO
-#' @param paa.catch.male TODO
-#' @param n.trips.paa.catch TODO
-#' @param paa.survey1.female TODO
-#' @param paa.survey1.male TODO
-#' @param n.trips.paa.survey1 TODO
-#' @param paa.mature TODO
-#' @param weight.female TODO
-#' @param weight.male TODO
-#' @param misc.fixed.param TODO
-#' @param theta.ini TODO
-#' @param lkhd.paa TODO
-#' @param var.paa.add TODO
-#' @param enable.priors TODO
-#'
-#' @details To be used with the POP cpp template.
-#' @return A list of class `obj` properly formatted to be fed to `fit()`,
-#' with the following objects:
-#'   * datalist: a list containing all DATA inputs for the TMB POP
-#'   template;
-#'   * parlist: a list containing all PARAMETER inputs for the TMB POP
-#'   template;
+#' @inheritParams sim
+#' @inherit sim return
 #' @export
 
-POPbuild <- function(survey1,
+build <- function(survey1,
   survey2,
   survey3,
   paa.catch.female,
@@ -107,7 +81,6 @@ POPbuild <- function(survey1,
     sigmaR <- as.numeric(misc.fixed.param['sigmaR'])
   }
 
-
   A <- length(weight.female)
   TC <- dim(catch)[[1]]
   TS1 <- dim(survey1)[[1]]
@@ -148,79 +121,79 @@ POPbuild <- function(survey1,
   # Outputs
 
   parlist <- list(
-    'logR0' = log(R0),
-    'logM1' = log(M1),
-    'logM2' = log(M2),
-    'logmuC' = log(muC),
-    'deltaC' = deltaC,
-    'logupsilonC' = upsilonC,
-    'logmuS1' = log(muS1),
-    'deltaS1' = deltaS1,
-    'logupsilonS1' = log(upsilonS1),
-    'logh' = log(h),
-    'logqS1' = log(qS1),
-    'logqS2' = log(qS2),
-    'logqS3' = log(qS3),
-    'logRt' = rep(log(R0), TC)
+    logR0 = log(R0),
+    logM1 = log(M1),
+    logM2 = log(M2),
+    logmuC = log(muC),
+    deltaC = deltaC,
+    logupsilonC = upsilonC,
+    logmuS1 = log(muS1),
+    deltaS1 = deltaS1,
+    logupsilonS1 = log(upsilonS1),
+    logh = log(h),
+    logqS1 = log(qS1),
+    logqS2 = log(qS2),
+    logqS3 = log(qS3),
+    logRt = rep(log(R0), TC)
   )
 
   datalist <- list(
-    'Ct' = catch[, 2],
-    'S1t' = survey1[, 2],
-    'S2t' = survey2[, 2],
-    'S3t' = survey3[, 2],
-    'patC1' = t(as.matrix(unname(
+    Ct = catch[, 2],
+    S1t = survey1[, 2],
+    S2t = survey2[, 2],
+    S3t = survey3[, 2],
+    patC1 = t(as.matrix(unname(
       paa.catch.female[, -1]
     ))),
     # AxUC
-    'patC2' = t(as.matrix(unname(paa.catch.male[, -1]))),
+    patC2 = t(as.matrix(unname(paa.catch.male[, -1]))),
     # AxUC
-    'ntC' = n.trips.paa.catch[, -1],
-    'patS11' = t(as.matrix(unname(
+    ntC = n.trips.paa.catch[, -1],
+    patS11 = t(as.matrix(unname(
       paa.survey1.female[, -1]
     ))),
     # AxUS1
-    'patS12' = t(as.matrix(unname(
+    patS12 = t(as.matrix(unname(
       paa.survey1.female[, -1]
     ))),
     # AxUS1
-    'ntS1' = n.trips.paa.survey1[, -1],
-    'tS1' = tS1,
-    'tS2' = tS2,
-    'tS3' = tS3,
-    'tUC' = tUC,
-    'tUS1' = tUS1,
-    'wa1' = weight.female,
-    'wa2' = weight.male,
-    'ma' = paa.mature,
-    'kappaS1' = kappaS1,
-    'kappaS2' = kappaS2,
-    'kappaS3' = kappaS3,
-    'muS2' = muS2,
-    'deltaS2' = deltaS2,
-    'upsilonS2' = upsilonS2,
-    'muS3' = muS3 ,
-    'deltaS3' = deltaS3,
-    'upsilonS3' = upsilonS3,
-    'sigmaR' = sigmaR,
-    'lkhdpropatage' = lkhdpropatage,
-    'varweight' = as.integer(var.paa.add),
-    'enablepriors' = as.integer(enable.priors)
+    ntS1 = n.trips.paa.survey1[, -1],
+    tS1 = tS1,
+    tS2 = tS2,
+    tS3 = tS3,
+    tUC = tUC,
+    tUS1 = tUS1,
+    wa1 = weight.female,
+    wa2 = weight.male,
+    ma = paa.mature,
+    kappaS1 = kappaS1,
+    kappaS2 = kappaS2,
+    kappaS3 = kappaS3,
+    muS2 = muS2,
+    deltaS2 = deltaS2,
+    upsilonS2 = upsilonS2,
+    muS3 = muS3 ,
+    deltaS3 = deltaS3,
+    upsilonS3 = upsilonS3,
+    sigmaR = sigmaR,
+    lkhdpropatage = lkhdpropatage,
+    varweight = as.integer(var.paa.add),
+    enablepriors = as.integer(enable.priors)
   )
 
   res <- list(
-    'parlist' = parlist,
-    'datalist' = datalist,
-    'length.theta' = length.theta,
-    'years' = yearsvec,
-    'A' = A,
-    'TC' = TC,
-    'TS1' = TS1,
-    'TS2' = TS2,
-    'TS3' = TS3,
-    'UC' = UC,
-    'US1' = US1
+    parlist = parlist,
+    datalist = datalist,
+    length.theta = length.theta,
+    years = yearsvec,
+    A = A,
+    TC = TC,
+    TS1 = TS1,
+    TS2 = TS2,
+    TS3 = TS3,
+    UC = UC,
+    US1 = US1
   )
-  class(res) <- 'obj'
+  class(res) <- obj
   res
 }

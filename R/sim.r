@@ -1,43 +1,95 @@
-#' Simulate data according to POP model.
+#' Simulate data to test model fitting
 #'
-#' Uses fixed covariates and parameters to generate random effects and
-#' response variables. Outputs a list of class `obj` that can be directly
-#' supplied to `fit()`.
+#' Uses fixed covariates and parameters to generate random effects and response
+#' variables. Outputs a list of class `obj` that can be directly supplied to
+#' [fit()].
 #'
-#' @param survey1 TODO
-#' @param survey2 TODO
-#' @param survey3 TODO
-#' @param paa.catch.female TODO
-#' @param paa.catch.male TODO
-#' @param n.trips.paa.catch TODO
-#' @param paa.survey1.female TODO
-#' @param paa.survey1.male TODO
-#' @param n.trips.paa.survey1 TODO
-#' @param catch TODO
-#' @param paa.mature TODO
-#' @param weight.female TODO
-#' @param weight.male TODO
-#' @param misc.fixed.param TODO
-#' @param theta.ini TODO
-#' @param lkhd.paa TODO
-#' @param var.paa.add TODO
-#' @param enable.priors TODO
+#' @param catch Data frame (or matrix) of commercial trawl data, dimensions are
+#'   TC rows by 2 columns. The first column is the year, while the second column
+#'   is the observed catch.
+#' @param survey1 matrix (or data frame) of biomass estimates from survey 1 (g =
+#'   2); each row corresponds to a year of available data, the ﬁrst column
+#'   reports the year (T_2), the second column is the survey biomass estimate I
+#'   t,2 , and the third column is the observation error SD values κ t,2, for t
+#'   ∈ T_2.
+#' @param survey2 matrix (or data frame) of biomass estimates from survey 2 (g =
+#'   3); each row corresponds to a year of available data, the ﬁrst column
+#'   reports the year (T_3), the second column is the survey biomass estimate I
+#'   t,3 , and the third column is the observation error SD values κ t,3, for t
+#'   ∈ T_3.
+#' @param survey3 matrix (or data frame) of biomass estimates from survey 1 (g =
+#'   4); each row corresponds to a year of available data, the ﬁrst column
+#'   reports the year (T_4), the second column is the survey biomass estimate I
+#'   t,4 , and the third column is the observation error SD values κ t,4, for t
+#'   ∈ T_4.
+#' @param paa.catch.female matrix (or data frame) of paa for the females (s = 1)
+#'   from the commercial catch (g = 1); each row corresponds to a year of
+#'   available data, the ﬁrst column reports the year (U_1) and the next 30
+#'   columns correspond to the paa per age class and year p a,t,1,1 , for t ∈ U_1.
+#' @param paa.catch.male matrix (or data frame) of paa for the males (s = 2)
+#'   from the commercial catch (g = 1); each row corresponds to a year of
+#'   available data, the ﬁrst column is the year (U_1) and the next 30 columns
+#'   correspond to the paa per age class and year p a,t,1,2 , for t ∈ U 1.
+#' @param n.trips.paa.catch matrix (or data frame) of the number of trips per
+#'   year of available paa for the commercial catch (g = 1); each row
+#'   corresponds to a year, the ﬁrst column reports the year (U_1), the second
+#'   column is the number of trips n t,1 , for t ∈ U_1.
+#' @param paa.survey1.female matrix (or data frame) of paa for the females
+#'   (s = 1) from survey 1 (g = 2); each row corresponds to a year of available data,
+#'   the ﬁrst column reports the year (U_2) and the next 30 columns correspond
+#'   to the paa per age class and year p a,t,2,1 , for t ∈ U_2.
+#' @param paa.survey1.male matrix (or data frame) of paa for the males (s = 2)
+#'   from survey 1 (g = 2); each row corresponds to a year of available data,
+#'   the ﬁrst column is the year (U_2) and the next 30 columns correspond to
+#'   the paa per age class and year p a,t,2,2 , for t ∈ U_2.
+#' @param n.trips.paa.survey1 matrix (or data frame) of the number of trips per
+#'   year of available paa for survey 1 (g = 2); each row corresponds to a year,
+#'   the ﬁrst column reports the year (U_2), the second column is the number of
+#'   trips n t,2 , for t ∈ U 2.
+#' @param catch matrix (or data frame) of commercial catch (g = 1); each row
+#'   corresponds to a year of available data, the ﬁrst column reports the year
+#'   (T_1, i.e the whole range 1940–2012), the second column is the catch C_t.
+#' @param paa.mature vector of A = 30 proportions of mature females.
+#' @param weight.female vectors of A = 30 average weight at age of females (s = 1).
+#' @param weight.male vectors of A = 30 average weight at age of males (s = 2).
+#' @param misc.fixed.param optional named vector/list (or data frame) of ﬁxed
+#'   values for the selectivity parameters of surveys 2 and 3 and for the
+#'   process error SD σ R ; the names must match `muS2`, `deltaS2`, `upsilonS2`, `muS3`,
+#'   `deltaS3`, `upsilonS3` and `sigmaR`. If unused (left to `NULL`), then the following
+#'   default values are used: muS2 = muS3 = 13.3, deltaS2 = deltaS3 = 0.22,
+#'   upsilonS2 = upsilonS3 = 10 and sigmaR = 0.05.
+#' @param theta.ini optional named vector/list (or data frame) of starting
+#'   values for the model parameters to be estimated; the names must match `R0`,
+#'   `M1`, `M2`, `muC`, `deltaC`, `upsilonC`, `muS1`, `deltaS1`, `upsilonS1`, `h`, `qS1`, `qS2` and
+#'   `qS3`. If unused (left to `NULL`), then the default values given in Table 2 are
+#'   used.
+#' @param lkhd.paa either `"normal"` or `"binomial"`; speciﬁes a binomial likelihood
+#'   for the paa, following Cadigan et al. (2014), which may be more
+#'   statistically sound (and simpler) or a Gaussian likelihood as originally
+#'   speciﬁed in Edwards et al. (2014). Defaults to "normal".
+#' @param var.paa.add either `TRUE` or `FALSE`; if `TRUE` (the default), it
+#'   enables the addition of the 1/(10A) term in Var[ξ a,t,g,s ] related to the
+#'   Gaussian observation error of (F.19 ? ). If `FALSE`, this additional term
+#'   is 0 (disabled). If some observed p a,t,g,s are exactly 0 or 1, as in the
+#'   POP data, then it must be set to `TRUE` to avoid zero variances with
+#'   `lkhd.paa = "normal"`.
+#' @param enable.priors either `TRUE` or `FALSE`; if `TRUE` (the default), it
+#'   enables all the prior distributions deﬁned in Section 3.1. If `FALSE`, the
+#'   priors are disabled and the maximization over θ is carried without any
+#'   constraints (apart from constraints on their range of possible values
+#'   enforced by means of transformations, such as strictly positive variances).
 #'
-#' @details To be used with the POP cpp template. Compatible with v0.4.
-#' @return A list of class POPobj properly formatted to be fed to `fit()`,
-#' with the following objects:
-#' \itemize{
-#'   \item datalist: a list containing all DATA inputs for the TMB POP
-#'   template;
-#'   \item parlist: a list containing all PARAMETER inputs for the TMB POP
-#'   template;
-#' }
+#' @return A list of class `obj` properly formatted to be fed to `fit()`,
+#' with the following elements:
+#'   * `datalist`: a list containing all DATA inputs for the TMB POP template;
+#'   * `parlist`: a list containing all PARAMETER inputs for the TMB POP template;
 #'
 #' @importFrom methods is
 #' @importFrom stats nlminb rbinom rlnorm rnorm
 #'
 #' @export
-sim <- function(survey1,
+sim <- function(catch,
+  survey1,
   survey2,
   survey3,
   paa.catch.female,
@@ -46,7 +98,6 @@ sim <- function(survey1,
   paa.survey1.female,
   paa.survey1.male,
   n.trips.paa.survey1,
-  catch,
   paa.mature,
   weight.female,
   weight.male,
