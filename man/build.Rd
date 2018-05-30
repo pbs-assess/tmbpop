@@ -59,9 +59,9 @@ year of available paa for survey 1 (g = 2); each row corresponds to a year,
 the ﬁrst column reports the year (U_2), the second column is the number of
 trips n t,2 , for t ∈ U 2.}
 
-\item{catch}{Data frame (or matrix) of commercial trawl data, dimensions are
-TC rows by 2 columns. The first column is the year, while the second column
-is the observed catch.}
+\item{catch}{matrix (or data frame) of commercial catch (g = 1); each row
+corresponds to a year of available data, the ﬁrst column reports the year
+(T_1, i.e the whole range 1940–2012), the second column is the catch C_t.}
 
 \item{paa.mature}{vector of A = 30 proportions of mature females.}
 

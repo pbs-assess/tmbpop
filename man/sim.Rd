@@ -11,9 +11,9 @@ sim(catch, survey1, survey2, survey3, paa.catch.female, paa.catch.male,
   enable.priors = TRUE)
 }
 \arguments{
-\item{catch}{Data frame (or matrix) of commercial trawl data, dimensions are
-TC rows by 2 columns. The first column is the year, while the second column
-is the observed catch.}
+\item{catch}{matrix (or data frame) of commercial catch (g = 1); each row
+corresponds to a year of available data, the ﬁrst column reports the year
+(T_1, i.e the whole range 1940–2012), the second column is the catch C_t.}
 
 \item{survey1}{matrix (or data frame) of biomass estimates from survey 1 (g =
 2); each row corresponds to a year of available data, the ﬁrst column
@@ -99,10 +99,6 @@ enables all the prior distributions deﬁned in Section 3.1. If \code{FALSE}, th
 priors are disabled and the maximization over θ is carried without any
 constraints (apart from constraints on their range of possible values
 enforced by means of transformations, such as strictly positive variances).}
-
-\item{catch}{matrix (or data frame) of commercial catch (g = 1); each row
-corresponds to a year of available data, the ﬁrst column reports the year
-(T_1, i.e the whole range 1940–2012), the second column is the catch C_t.}
 }
 \value{
 A list of class \code{obj} properly formatted to be fed to \code{fit()},

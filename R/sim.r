@@ -4,9 +4,9 @@
 #' variables. Outputs a list of class `obj` that can be directly supplied to
 #' [fit()].
 #'
-#' @param catch Data frame (or matrix) of commercial trawl data, dimensions are
-#'   TC rows by 2 columns. The first column is the year, while the second column
-#'   is the observed catch.
+#' @param catch matrix (or data frame) of commercial catch (g = 1); each row
+#'   corresponds to a year of available data, the ﬁrst column reports the year
+#'   (T_1, i.e the whole range 1940–2012), the second column is the catch C_t.
 #' @param survey1 matrix (or data frame) of biomass estimates from survey 1 (g =
 #'   2); each row corresponds to a year of available data, the ﬁrst column
 #'   reports the year (T_2), the second column is the survey biomass estimate I
@@ -46,9 +46,6 @@
 #'   year of available paa for survey 1 (g = 2); each row corresponds to a year,
 #'   the ﬁrst column reports the year (U_2), the second column is the number of
 #'   trips n t,2 , for t ∈ U 2.
-#' @param catch matrix (or data frame) of commercial catch (g = 1); each row
-#'   corresponds to a year of available data, the ﬁrst column reports the year
-#'   (T_1, i.e the whole range 1940–2012), the second column is the catch C_t.
 #' @param paa.mature vector of A = 30 proportions of mature females.
 #' @param weight.female vectors of A = 30 average weight at age of females (s = 1).
 #' @param weight.male vectors of A = 30 average weight at age of males (s = 2).

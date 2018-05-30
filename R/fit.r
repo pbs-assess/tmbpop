@@ -36,24 +36,6 @@
 #' )
 #' model <- fit(sim_dat)
 #'
-#' # Sample via NUTS MCMC with Stan
-#' \donttest{
-#' library("tmbstan")
-#' # options(mc.cores = parallel::detectCores()) # for parallel processing
-#' pop_mcmc <- tmbstan(
-#'   model$obj,
-#'   chains = 1, # using only 1 chain and...
-#'   iter = 600, # only 600 iterations for a quick example
-#'   init = list("last.par.best"),
-#'   control = list(adapt_delta = 0.9, max_treedepth = 20L) # as needed, see ?stan
-#' )
-#'
-#' pars <- c("logR0", "logM1", "logh", "logmuC", "deltaC", "logqS1") # a selection
-#' bayesplot::mcmc_trace(as.array(pop_mcmc), pars = pars)
-#' bayesplot::mcmc_hist(as.array(pop_mcmc), pars = pars)
-#' bayesplot::mcmc_pairs(as.array(pop_mcmc), pars = pars)
-#' }
-#'
 #' # Table of estimated fixed parameters, their standard errors and the true theta
 #' table.theta <- cbind(sim_dat$true.theta, model$theta, model$se.theta)
 #' dimnames(table.theta)[[2]] <- c("True", "Estimate", "s.e.")
@@ -86,6 +68,24 @@
 #'   y = c(lb.B, ub.B[seq(sim_dat$TC, 1)]), col = "#4f4f4f40", border = NA
 #' )
 #' lines(sim_dat$years, sim_dat$true.B, col = "red")
+#'
+#' # Sample via NUTS MCMC with Stan
+#' \donttest{
+#' library("tmbstan")
+#' # options(mc.cores = parallel::detectCores()) # for parallel processing
+#' pop_mcmc <- tmbstan(
+#'   model$obj,
+#'   chains = 1, # using only 1 chain and...
+#'   iter = 600, # only 600 iterations for a quick example
+#'   init = list("last.par.best"),
+#'   control = list(adapt_delta = 0.9, max_treedepth = 20L) # as needed, see ?stan
+#' )
+#'
+#' pars <- c("logR0", "logM1", "logh", "logmuC", "deltaC", "logqS1") # a selection
+#' bayesplot::mcmc_trace(as.array(pop_mcmc), pars = pars)
+#' bayesplot::mcmc_hist(as.array(pop_mcmc), pars = pars)
+#' bayesplot::mcmc_pairs(as.array(pop_mcmc), pars = pars)
+#' }
 
 fit <- function(obj,
   trace = TRUE,
