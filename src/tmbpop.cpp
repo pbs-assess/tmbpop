@@ -41,7 +41,7 @@ Type invlogitSelectivity(int a, Type mu, Type ups){
 	return tmp/(1.0+tmp);
 } // steepness=10 mimics well selectivitiy curve in (F.7) and (F.8) with ups<5
 
-template <class Type> 
+template <class Type>
 Type square(Type x){
 	return x*x;
 }
@@ -119,7 +119,7 @@ Type objective_function<Type>::operator() () {
 	PARAMETER(logqS1); // log catchabilities S1
 	PARAMETER(logqS2); // log catchabilities S2
 	PARAMETER(logqS3); // log catchabilities S3
-	
+
 
 	// Random effects
 	PARAMETER_VECTOR(logRt); // recruits, dim TC
@@ -251,7 +251,7 @@ Type objective_function<Type>::operator() () {
 		Nat2(a,0) = 0.5*R0*exp(-M2*a); // (F.4)
 	}
 
-  // TODO-workshop: allow to start an non-equilibrium conditions
+  // TODO-workshop: allow to start in non-equilibrium conditions
 	Nat1(A-1,0) = 0.5*R0*exp(-M1*(A-1))/(1.0-expnegM1); // (F.5)
 	Nat2(A-1,0) = 0.5*R0*exp(-M2*(A-1))/(1.0-expnegM2); // (F.5)
 	// Bt, t=0,1
