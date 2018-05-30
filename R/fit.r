@@ -12,6 +12,7 @@
 #'   * many other elements to be described later TODO
 #' @export
 #' @useDynLib tmbpop
+#' @importFrom TMB MakeADFun
 #'
 #' @examples
 #' sim_dat <- sim(
@@ -95,7 +96,7 @@ fit <- function(obj,
   if (!is(obj, 'obj'))
     stop('Please supply an object of class "obj".')
 
-  .obj <- TMB::MakeADFun(
+  .obj <- MakeADFun(
     data = obj$datalist,
     parameters = obj$parlist,
     random = 'logRt',
