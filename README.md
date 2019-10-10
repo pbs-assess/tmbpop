@@ -22,3 +22,5 @@ See example model fitting:
 library(tmbpop)
 ?tmbpop::fit
 ```
+# tmbassess
+R package using TMB for Catch-Age modelling
