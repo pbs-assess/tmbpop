@@ -3,3 +3,8 @@
 *.so
 .Rhistory
 .RData
+*/knitr-cache
+*.docx
+*.doc
+*.ppt*
+.Rproj.user

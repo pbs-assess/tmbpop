@@ -1,14 +1,39 @@
-POPbuild <- function(survey1,survey2,survey3,
+#' Title
+#'
+#' @param survey1 x
+#' @param survey2 x
+#' @param survey3 x
+#' @param paa.catch.female x
+#' @param paa.catch.male x
+#' @param n.trips.paa.catch x
+#' @param paa.survey1.female x
+#' @param paa.survey1.male x
+#' @param n.trips.paa.survey1 x
+#' @param catch x
+#' @param paa.mature x
+#' @param weight.female x
+#' @param weight.male x
+#' @param misc.fixed.param x
+#' @param theta.ini x
+#' @param lkhd.paa x
+#' @param var.paa.add x
+#' @param enable.priors x
+#'
+#' @return
+#' @export
+POPbuild <- function(survey1,
+                     survey2,
+                     survey3,
                      paa.catch.female,paa.catch.male,
                      n.trips.paa.catch,
                      paa.survey1.female,paa.survey1.male,
                      n.trips.paa.survey1,
                      catch,paa.mature,weight.female,weight.male,
-                     misc.fixed.param=NULL,
-                     theta.ini=NULL,
-                     lkhd.paa="normal",
-                     var.paa.add=TRUE,
-                     enable.priors=TRUE){
+                     misc.fixed.param = NULL,
+                     theta.ini = NULL,
+                     lkhd.paa = "normal",
+                     var.paa.add = TRUE,
+                     enable.priors = TRUE){
   #/////////////////////////////////////////////////////////////////////////////
   #### Documentation ####
   #/////////////////////////////////////////////////////////////////////////////
@@ -28,11 +53,11 @@ POPbuild <- function(survey1,survey2,survey3,
   #'   template;
   #' }
   # TODO: finish roxygen2 doc
-  
+
   #/////////////////////////////////////////////////////////////////////////////
   #### Setup ####
   #/////////////////////////////////////////////////////////////////////////////
-  
+
   if (is.null(theta.ini)){ # then default starting values
     # fixed param, not in user-supplied data
     R0 <- 5000 # 4000 in Andy's priors
@@ -63,10 +88,10 @@ POPbuild <- function(survey1,survey2,survey3,
     qS2 <- as.numeric(theta.ini['qS2'])
     qS3 <- as.numeric(theta.ini['qS3'])
   }
-  
+
   yearsvec <- catch[,1]
   length.theta <- 13 # better way?
-  
+
   if (is.null(misc.fixed.param)){ # then default misc param values
     muS2 <- 13.3
     deltaS2 <- 0.22
@@ -84,8 +109,8 @@ POPbuild <- function(survey1,survey2,survey3,
     upsilonS3 <- as.numeric(misc.fixed.param['upsilonS3'])
     sigmaR <- as.numeric(misc.fixed.param['sigmaR'])
   }
-  
-  
+
+
   A <- length(weight.female)
   TC <- dim(catch)[[1]]
   TS1 <- dim(survey1)[[1]]
@@ -93,17 +118,17 @@ POPbuild <- function(survey1,survey2,survey3,
   TS3 <- dim(survey3)[[1]]
   UC <- dim(paa.catch.female)[[1]]
   US1 <- dim(paa.survey1.female)[[1]]
-  
+
   tS1 <- which(catch[,1]%in%survey1[,1])-1L # C++ indices
   tS2 <- which(catch[,1]%in%survey2[,1])-1L # C++ indices
   tS3 <- which(catch[,1]%in%survey3[,1])-1L # C++ indices
   tUC <- which(catch[,1]%in%paa.catch.female[,1])-1L # C++ indices
   tUS1 <- which(catch[,1]%in%paa.survey1.female[,1])-1L # C++ indices
-  
+
   kappaS1 <- survey1[,3]
   kappaS2 <- survey2[,3]
   kappaS3 <- survey3[,3]
-  
+
   muS2 <- as.numeric(MiscFixedParam['muS2'])
   deltaS2 <- as.numeric(MiscFixedParam['deltaS2'])
   upsilonS2 <- as.numeric(MiscFixedParam['upsilonS2'])
@@ -111,19 +136,19 @@ POPbuild <- function(survey1,survey2,survey3,
   deltaS3 <- as.numeric(MiscFixedParam['deltaS3'])
   upsilonS3 <- as.numeric(MiscFixedParam['upsilonS3'])
   sigmaR <- as.numeric(MiscFixedParam['sigmaR'])
-  
+
   if (lkhd.paa=="normal"){
     lkhdpropatage <- 1L
   } else if (lkhd.paa=="binomial"){
     lkhdpropatage <- 2L
   } else {stop('lkhd.paa can only be "normal" or "binomial".')}
-  
-  
-  
+
+
+
   #/////////////////////////////////////////////////////////////////////////////
   #### Outputs ####
   #/////////////////////////////////////////////////////////////////////////////
-  
+
   parlist <- list('logR0'=log(R0),
                   'logM1'=log(M1),'logM2'=log(M2),
                   'logmuC'=log(muC),'deltaC'=deltaC,'logupsilonC'=upsilonC,
@@ -132,7 +157,7 @@ POPbuild <- function(survey1,survey2,survey3,
                   'logh'=log(h),'logqS1'=log(qS1),'logqS2'=log(qS2),
                   'logqS3'=log(qS3),
                   'logRt'=rep(log(R0),TC))
-  
+
   datalist <- list('Ct'=catch[,2],
                    'S1t'=survey1[,2],'S2t'=survey2[,2],'S3t'=survey3[,2],
                    'patC1'=t(as.matrix(unname(paa.catch.female[,-1]))), # AxUC
@@ -150,11 +175,10 @@ POPbuild <- function(survey1,survey2,survey3,
                    'lkhdpropatage'=lkhdpropatage,
                    'varweight'=as.integer(var.paa.add),
                    'enablepriors'=as.integer(enable.priors))
-  
+
   res <- list('parlist'=parlist,'datalist'=datalist,
               'length.theta'=length.theta,'years'=yearsvec,
               'A'=A,'TC'=TC,'TS1'=TS1,'TS2'=TS2,'TS3'=TS3,'UC'=UC,'US1'=US1)
   class(res) <- 'POPobj' # useful?
   return(res)
 }
-# END POPbuild

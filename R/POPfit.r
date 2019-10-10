@@ -1,5 +1,15 @@
-POPfit <- function(POPobj,trace=TRUE,
-                   optim.control=list(eval.max=5000,iter.max=5000)){
+#' Title
+#'
+#' @param POPobj x
+#' @param trace x
+#' @param optim.control x
+#'
+#' @return
+#' @export
+POPfit <- function(POPobj,
+                   trace = TRUE,
+                   optim.control = list(eval.max = 5000,
+                                        iter.max = 5000)){
   #/////////////////////////////////////////////////////////////////////////////
   #### Documentation ####
   #/////////////////////////////////////////////////////////////////////////////
@@ -15,39 +25,39 @@ POPfit <- function(POPobj,trace=TRUE,
   #'   \item se.theta: vector of standard errors of fixed parameters;
   #' }
   # TODO: finish roxygen2 doc
-  
+
   #/////////////////////////////////////////////////////////////////////////////
   #### Setup, minimization and sdreport ####
   #/////////////////////////////////////////////////////////////////////////////
-  
+
   if (!is(POPobj,'POPobj')){stop('Please supply an object of class "POPobj".')}
-  
+
   obj <- MakeADFun(data=POPobj$datalist,parameters=POPobj$parlist,
                    random='logRt',
                    DLL="POP",silent=!trace)
-  
+
   wallclock <- proc.time()[3]
   opt <- nlminb(start=obj$par,obj=obj$fn,gr=obj$gr,control=optim.control)
-  
-  
+
+
   rep <- sdreport(obj)
   summary.rep <- summary(rep) # ADREPORT stuff
-  
+
   meanrep <- obj$report(obj$env$last.par.best) # REPORT stuff
   elapsed.time <- proc.time()[3]-wallclock
-  
-  
+
+
   #/////////////////////////////////////////////////////////////////////////////
   #### Outputs ####
   #/////////////////////////////////////////////////////////////////////////////
-  
+
   if (trace){message('optim and sdreport took ',round(elapsed.time,1),' seconds.')}
-  
+
   est.theta <- summary.rep[(POPobj$length.theta+POPobj$TC+1):
                              (2*POPobj$length.theta+POPobj$TC),1]
   se.est.theta <- summary.rep[(POPobj$length.theta+POPobj$TC+1):
                                 (2*POPobj$length.theta+POPobj$TC),2]
-  
+
   pred.Rt <- summary.rep[dimnames(summary.rep)[[1]]=='Rt',1]
   se.pred.Rt <- summary.rep[dimnames(summary.rep)[[1]]=='Rt',2]
   pred.Bt <- summary.rep[dimnames(summary.rep)[[1]]=='Bt',1]
@@ -56,7 +66,7 @@ POPfit <- function(POPobj,trace=TRUE,
   se.pred.Vt <- summary.rep[dimnames(summary.rep)[[1]]=='Vt',2]
   pred.ut <- summary.rep[dimnames(summary.rep)[[1]]=='ut',1]
   se.pred.ut <- summary.rep[dimnames(summary.rep)[[1]]=='ut',2]
-  
+
   pred.uat1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='uat1',1],
                       POPobj$A,POPobj$TC)
   se.pred.uat1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='uat1',2],
@@ -65,7 +75,7 @@ POPfit <- function(POPobj,trace=TRUE,
                       POPobj$A,POPobj$TC)
   se.pred.uat2 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='uat2',2],
                          POPobj$A,POPobj$TC)
-  
+
   pred.sag1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='sag1',1],
                       POPobj$A,4) # G=4 surveys
   se.pred.sag1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='sag1',2],
@@ -74,7 +84,7 @@ POPfit <- function(POPobj,trace=TRUE,
                       POPobj$A,4) # G=4 surveys
   se.pred.sag2 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='sag2',2],
                          POPobj$A,4) # G=4 surveys
-  
+
   pred.Nat1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='Nat1',1],
                       POPobj$A,POPobj$TC)
   se.pred.Nat1 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='Nat1',2],
@@ -83,7 +93,7 @@ POPfit <- function(POPobj,trace=TRUE,
                       POPobj$A,POPobj$TC)
   se.pred.Nat2 <- matrix(summary.rep[dimnames(summary.rep)[[1]]=='Nat2',2],
                          POPobj$A,POPobj$TC)
-  
+
   return(list('theta'=est.theta,'se.theta'=se.est.theta,
               'R'=pred.Rt,'se.R'=se.pred.Rt,
               'B'=pred.Bt,'se.B'=se.pred.Bt,
@@ -104,4 +114,3 @@ POPfit <- function(POPobj,trace=TRUE,
               'mean.paa.survey1.male'=meanrep$meanpatS12
   ))
 }
-# END POPfit
