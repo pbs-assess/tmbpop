@@ -1,4 +1,5 @@
-.Rproj.user
 ^Session.vim$
 *.o
 *.so
+.Rhistory
+.RData

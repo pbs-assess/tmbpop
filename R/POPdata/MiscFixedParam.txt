@@ -1,0 +1,2 @@
+muS2	deltaS2	upsilonS2	muS3	deltaS3	upsilonS3	sigmaR
+13.3	0.22					10	13.3		0.22				 10		0.05
