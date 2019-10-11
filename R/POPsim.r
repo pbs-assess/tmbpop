@@ -1,39 +1,14 @@
-#' Title
-#'
-#' @param survey1 x
-#' @param survey2 x
-#' @param survey3 x
-#' @param paa.catch.female x
-#' @param paa.catch.male x
-#' @param n.trips.paa.catch x
-#' @param paa.survey1.female x
-#' @param paa.survey1.male x
-#' @param n.trips.paa.survey1 x
-#' @param catch x
-#' @param paa.mature x
-#' @param weight.female x
-#' @param weight.male x
-#' @param misc.fixed.param x
-#' @param theta.ini x
-#' @param lkhd.paa x
-#' @param var.paa.add x
-#' @param enable.priors x
-#'
-#' @return
-#' @export
-POPsim <- function(survey1,
-                   survey2,
-                   survey3,
+POPsim <- function(survey1,survey2,survey3,
                    paa.catch.female,paa.catch.male,
                    n.trips.paa.catch,
                    paa.survey1.female,paa.survey1.male,
                    n.trips.paa.survey1,
                    catch,paa.mature,weight.female,weight.male,
-                   misc.fixed.param = NULL,
-                   theta.ini = NULL,
-                   lkhd.paa = "normal",
-                   var.paa.add = TRUE,
-                   enable.priors = TRUE){
+                   misc.fixed.param=NULL,
+                   theta.ini=NULL,
+                   lkhd.paa="normal",
+                   var.paa.add=TRUE,
+                   enable.priors=TRUE){
   #/////////////////////////////////////////////////////////////////////////////
   #### Documentation ####
   #/////////////////////////////////////////////////////////////////////////////
@@ -53,23 +28,23 @@ POPsim <- function(survey1,
   #'   template;
   #' }
   # TODO: finish roxygen2 doc
-
-
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### Functions ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   # bound11 <- function(x){(1-exp(-x))/1+exp(-x)}
   invlogitSelectivity <- function(a,mu,ups){
     tmp <- exp((a-(mu-ups/2))/ups*10)
     return(tmp/(1+tmp))
   } # steepness=10 mimics well selectivitiy curve in (F.7) and (F.8) with ups<5
-
-
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### Setup ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   if (is.null(theta.ini)){ # then default starting values
     # fixed param, not in user-supplied data
     R0 <- 5000 # 4000 in Andy's priors
@@ -86,10 +61,10 @@ POPsim <- function(survey1,
     qS2 <- 1
     qS3 <- 1
   }
-
+  
   yearsvec <- catch[,1]
   length.theta <- 13 # better way?
-
+  
   if (is.null(misc.fixed.param)){ # then default misc param values
     muS2 <- 13.3
     deltaS2 <- 0.22
@@ -107,7 +82,7 @@ POPsim <- function(survey1,
     upsilonS3 <- as.numeric(misc.fixed.param['upsilonS3'])
     sigmaR <- as.numeric(misc.fixed.param['sigmaR'])
   }
-
+  
   A <- length(weight.female)
   TC <- dim(catch)[[1]]
   TS1 <- dim(survey1)[[1]]
@@ -115,40 +90,40 @@ POPsim <- function(survey1,
   TS3 <- dim(survey3)[[1]]
   UC <- dim(paa.catch.female)[[1]]
   US1 <- dim(paa.survey1.female)[[1]]
-
+  
   # R indices, converted for C++ in Outputs
   tS1 <- which(catch[,1]%in%survey1[,1])
   tS2 <- which(catch[,1]%in%survey2[,1])
   tS3 <- which(catch[,1]%in%survey3[,1])
   tUC <- which(catch[,1]%in%paa.catch.female[,1])
   tUS1 <- which(catch[,1]%in%paa.survey1.female[,1])
-
+  
   Ct <- catch[,2]
   ntC <- n.trips.paa.catch[,2]
   ntS1 <- n.trips.paa.survey1[,2]
   wa1 <- weight.female
   wa2 <- weight.male
   ma <- paa.mature
-
+  
   kappaS1 <- survey1[,3]
   kappaS2 <- survey2[,3]
   kappaS3 <- survey3[,3]
-
+  
   if (lkhd.paa=="normal"){
     lkhdpropatage <- 1L
   } else if (lkhd.paa=="binomial"){
     lkhdpropatage <- 2L
   } else {stop('lkhd.paa can only be "normal" or "binomial".')}
-
+  
   varweight <- as.integer(var.paa.add)
   enablepriors <- as.integer(enable.priors)
-
+  
   G <- 4 # number of fleets # TODO: config, allow for more than 4?
   indC <- 1 # index for catch data
   indS1 <- 2 # g index for S1
   indS2 <- 3 # g index for S2
   indS3 <- 4 # g index for S3
-
+  
   Nat1 <- matrix(NA_real_,A,TC) # abundance females
   Nat2 <- Nat1 # abundance males
   sag1 <- matrix(NA_real_,A,G) # selectivity females
@@ -159,37 +134,37 @@ POPsim <- function(survey1,
   ut <- Bt # alternative to fishing mortality
   uat1 <- Nat1
   uat2 <- Nat1
-
+  
   patC1 <- matrix(NA_real_,A,UC) # prop-at-age catch females
   patC2 <- patC1 # prop-at-age catch males
   patS11 <- matrix(NA_real_,A,US1) # prop-at-age S1 females
   patS12 <- patS11 # prop-at-age S1 males
-
+  
   expnegM1 <- exp(-M1)
   expnegM2 <- exp(-M2)
   sqrtexpnegM1 <- sqrt(expnegM1) # exp(-M1*0.5)
   sqrtexpnegM2 <- sqrt(expnegM2) # exp(-M2*0.5)
-
-
-
-
+  
+  
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### Generate iid process errors ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   errRt <- rlnorm(n=TC,meanlog=-sigmaR^2/2,sdlog=sigmaR) # proc error Rt
   errS1t <- rlnorm(n=TS1,meanlog=-kappaS1^2/2,sdlog=kappaS1) # obs error S1t
   errS2t <- rlnorm(n=TS2,meanlog=-kappaS2^2/2,sdlog=kappaS2) # obs error S2t
   errS3t <- rlnorm(n=TS3,meanlog=-kappaS3^2/2,sdlog=kappaS3) # obs error S3t
-
-
-
+  
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### States dynamics ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   ### Selectivities, all fleets
-
+  
   for (a in 1:A){
     sag1[a,indC] <- invlogitSelectivity(a,muC,upsilonC) # catch females (F.7)
     sag2[a,indC] <- invlogitSelectivity(a,muC+deltaC,upsilonC) # catch males (F.8)
@@ -200,9 +175,9 @@ POPsim <- function(survey1,
     sag1[a,indS3] <- invlogitSelectivity(a,muS3,upsilonS3) # S3 females (F.7)
     sag2[a,indS3] <- invlogitSelectivity(a,muS3+deltaS3,upsilonS3) # S3 males (F.8)
   }
-
+  
   ### init Nat, Bt, Rt, Vt, ut and uat
-
+  
   # Nat, t=1, s=1,2
   for (a in 1:(A-1)){
     Nat1[a,1] <- 0.5*R0*exp(-M1*a) # (F.4)
@@ -210,32 +185,32 @@ POPsim <- function(survey1,
   }
   Nat1[A,1] <- 0.5*R0*exp(-M1*(A-1))/(1-expnegM1) # (F.5)
   Nat2[A,1] <- 0.5*R0*exp(-M2*(A-1))/(1-expnegM2) # (F.5)
-
+  
   # Bt, t=0,1
   Bt[1] <- as.numeric((wa1*ma)%*%Nat1[,1]) # t=1 (F.6)
   B0 <- Bt[1] # t=0 (F.6)
-
+  
   # Rt, t=1
   meanR0 <- R0 # (F.10)
   Rt[1] <- meanR0*errRt[1] # (F.17)
-
+  
   # Vt and ut, requires Ct[1], t=1
   sumwsN1 <- (wa1*sag1[,indC])%*%Nat1[,1] # (F.11)
   sumwsN2 <- (wa2*sag2[,indC])%*%Nat2[,1] # (F.11)
   Vt[1] <- sqrtexpnegM1*sumwsN1+sqrtexpnegM2*sumwsN2 # (F.11)
   ut[1] <- Ct[1]/Vt[1] # Ct must be a fixed covariate (F.12)
-
+  
   # uat, t=1
   uat1[,1] <- sag1[,indC]*ut[1] # (F.13)
   uat2[,1] <- sag2[,indC]*ut[1] # (F.13)
-
+  
   ### dynamics for Rt, Nat, Bt, Vt, ut and uat, 2<=t<=T
-
+  
   for (t in 2:TC){
     # Rt, based on Bt[t-1]
     meanRt <- 4*h*R0*Bt[t-1]/((1-h)*B0+(5*h-1)*Bt[t-1]) # (F.10)
     Rt[t] <- meanRt*errRt[t] # (F.17)
-
+    
     # Nat, based on Rt[t], uat[,t-1] and Nat[,t-1]
     Nat1[1,t] <- 0.5*Rt[t] # (F.1)
     Nat2[1,t] <- 0.5*Rt[t] # (F.1)
@@ -247,26 +222,26 @@ POPsim <- function(survey1,
       expnegM1*(1-uat1[A,t-1])*Nat1[A,t-1] # (F.3)
     Nat2[A,t] <- expnegM2*(1-uat2[A-1,t-1])*Nat2[A-1,t-1]+
       expnegM2*(1-uat2[A,t-1])*Nat2[A,t-1] # (F.3)
-
+    
     # Bt, based on Nat[,t]
     Bt[t] <- as.numeric((wa1*ma)%*%Nat1[,t]) # (F.9)
-
+    
     # Vt and ut, based on Nat[,t] an Ct[t]
     sumwsN1 <- (wa1*sag1[,indC])%*%Nat1[,t] # (F.11)
     sumwsN2 <- (wa2*sag2[,indC])%*%Nat2[,t] # (F.11)
     Vt[t] <- sqrtexpnegM1*sumwsN1+sqrtexpnegM2*sumwsN2 # (F.11)
     ut[t] <- Ct[t]/Vt[t] # Ct must be a fixed covariate (F.12)
-
+    
     # uat, based on ut
     uat1[,t] <- sag1[,indC]*ut[t] # (F.13)
     uat2[,t] <- sag2[,indC]*ut[t] # (F.13)
   }
-
-
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### Observation equations ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   # survey index S1, t in tS1
   sumuwsN1 <- as.numeric(
     sag1[,indS1]%*%((1-0.5*uat1[,tS1])*Nat1[,tS1]*matrix(rep(wa1,TS1),A,TS1))) # (F.14)
@@ -274,7 +249,7 @@ POPsim <- function(survey1,
     sag2[,indS1]%*%((1-0.5*uat2[,tS1])*Nat2[,tS1]*matrix(rep(wa2,TS1),A,TS1))) # (F.14)
   meanS1t <- qS1*(sqrtexpnegM1*sumuwsN1+sqrtexpnegM2*sumuwsN2) # (F.14)
   S1t <- meanS1t*errS1t # (F.20)
-
+  
   # survey index S2, t in tS2
   sumuwsN1 <- as.numeric(
     sag1[,indS2]%*%((1-0.5*uat1[,tS2])*Nat1[,tS2]*matrix(rep(wa1,TS2),A,TS2))) # (F.14)
@@ -282,7 +257,7 @@ POPsim <- function(survey1,
     sag2[,indS2]%*%((1-0.5*uat2[,tS2])*Nat2[,tS2]*matrix(rep(wa2,TS2),A,TS2))) # (F.14)
   meanS2t <- qS2*(sqrtexpnegM1*sumuwsN1+sqrtexpnegM2*sumuwsN2) # (F.14)
   S2t <- meanS2t*errS2t # (F.20)
-
+  
   # survey index S3, t in tS3
   sumuwsN1 <- as.numeric(
     sag1[,indS3]%*%((1-0.5*uat1[,tS3])*Nat1[,tS3]*matrix(rep(wa1,TS3),A,TS3))) # (F.14)
@@ -290,7 +265,7 @@ POPsim <- function(survey1,
     sag2[,indS3]%*%((1-0.5*uat2[,tS3])*Nat2[,tS3]*matrix(rep(wa2,TS3),A,TS3))) # (F.14)
   meanS3t <- qS3*(sqrtexpnegM1*sumuwsN1+sqrtexpnegM2*sumuwsN2) # (F.14)
   S3t <- meanS3t*errS3t # (F.20)
-
+  
   # prop at age C, t in tUC
   if (lkhdpropatage==1){ # Gaussian lkhd
     if (varweight==0){ # no variance inflation
@@ -329,8 +304,8 @@ POPsim <- function(survey1,
       patC2[,t] <- rbinom(n=A,prob=meanpat2,size=ntC[t])/ntC[t]
     }
   } else {stop('lkhdpropatage can only be "1" (Gaussian) or "2" (binomial).')}
-
-
+  
+  
   # prop at age S1, t in tUS1
   if (lkhdpropatage==1){ # Gaussian lkhd
     if (varweight==0){ # no variance inflation
@@ -369,22 +344,22 @@ POPsim <- function(survey1,
       patS12[,t] <- rbinom(n=A,prob=meanpat2,size=ntS1[t])/ntS1[t]
     }
   } else {stop('lkhdpropatage can only be "1" (Gaussian) or "2" (binomial).')}
-
-
+  
+  
   #/////////////////////////////////////////////////////////////////////////////
   #### Outputs ####
   #/////////////////////////////////////////////////////////////////////////////
-
+  
   # convert R indices into C++ indices
   tS1 <- as.integer(tS1-1)
   tS2 <- as.integer(tS2-1)
   tS3 <- as.integer(tS3-1)
   tUC <- as.integer(tUC-1)
   tUS1 <- as.integer(tUS1-1)
-
+  
   true.theta <- c(R0,M1,M2,muC,deltaC,upsilonC,
                   muS1,deltaS1,upsilonS1,h,qS1,qS2,qS3)
-
+  
   parlist <- list('logR0'=log(R0),
                   'logM1'=log(M1),'logM2'=log(M2),
                   'logmuC'=log(muC),'deltaC'=deltaC,'logupsilonC'=log(upsilonC),
@@ -393,7 +368,7 @@ POPsim <- function(survey1,
                   'logh'=log(h),'logqS1'=log(qS1),'logqS2'=log(qS2),
                   'logqS3'=log(qS3),
                   'logRt'=rep(log(R0),TC))
-
+  
   datalist <- list('S1t'=S1t,'S2t'=S2t,'S3t'=S3t, # response
                    'patC1'=patC1,'patC2'=patC2, # response
                    'patS11'=patS11,'patS12'=patS12, # response
@@ -407,7 +382,7 @@ POPsim <- function(survey1,
                    'lkhdpropatage'=lkhdpropatage,'varweight'=varweight, # options
                    'enablepriors'=as.integer(enable.priors) # options
   )
-
+  
   res <- list('parlist'=parlist,'datalist'=datalist,
               'true.theta'=true.theta,
               'true.R'=Rt,'true.B'=Bt,'true.V'=Vt,'true.u'=ut,
@@ -418,5 +393,6 @@ POPsim <- function(survey1,
               'A'=A,'TC'=TC,'TS1'=TS1,'TS2'=TS2,'TS3'=TS3,'UC'=UC,'US1'=US1)
   class(res) <- 'POPobj' # useful?
   return(res)
-
+  
 }
+# END POPsim
