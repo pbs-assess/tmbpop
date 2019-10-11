@@ -1,27 +1,21 @@
 Package: tmbpop
 Version: 0.0.0.9000
-Title: Stock assessment Catch-Age model for Pacific Ocean Perch
-Description: A Catch-Age stock assessment model using TMB
-Authors@R: 
-  person(given = "Chris",
-  family = "Grandin",
-  role = c("aut", "cre"),
-  email = "chris.grandin@gmail.com",
-  comment = c(ORCID = "https://orcid.org/0000-0002-6746-3486"))
+Title: What the Package Does (One Line, Title Case)
+Description: What the package does (one paragraph).
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 6.0.1.9000
 Depends: R (>= 3.2.0), TMB 
 LinkingTo: TMB, RcppEigen
 Imports: 
-  here,
-  magrittr,
-  methods,
-  stats,
-  tmbstan,
-  bayesplot,
+    magrittr,
+    methods,
+    stats,
+    tmbstan,
+    bayesplot
 Suggests: 
     testthat
